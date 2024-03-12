@@ -1,0 +1,691 @@
+openapi: 3.0.1
+info:
+  title: "API de Pagos y Compras"
+  version: "1.0"
+
+paths:
+  /v1/documents/upload:
+    post:
+      summary: Subir documentos
+      tags:
+        - Documents
+      security:
+        - CognitoJWT: []
+      requestBody:
+        $ref: '#/components/requestBodies/UploadFileRequestBody'
+      responses:
+        201:
+          $ref: '#/components/responses/UploadFileResponse'
+  
+  /v1/documents:
+    get:
+      summary: Obtener Documentos por usuario
+      tags:
+        - Documents
+      parameters:
+        - in: query
+          schema:
+            type: integer
+          name: limit
+          required: false
+        - in: query
+          schema:
+            type: integer
+          name: page
+          required: false
+        - in: query
+          schema:
+            type: integer
+          name: sort_order
+          required: false
+        - in: query
+          schema:
+            type: string
+          name: sort_colum
+          required: false
+        - in: query
+          schema:
+            type: string
+          name: id
+          required: false
+      security:
+        - CognitoJWT: []
+      responses:
+        200:
+          $ref: '#/components/responses/DocumentsResponse'
+          
+  /v1/documents/receive:
+    post:
+      summary: Recibir archivos de Gob Carpetas
+      tags:
+        - Documents
+      security:
+        - APIKey: []
+      requestBody:
+        $ref: '#/components/requestBodies/ReceiveDocumentBody'
+      responses:
+        201:
+          $ref: '#/components/responses/ReceiveDocumentResponse'
+          
+  /v1/documents/create-package:
+    post:
+      summary: Crear un paquete de documentos
+      tags:
+        - Documents
+      security:
+        - CognitoJWT: []
+      requestBody:
+        $ref: '#/components/requestBodies/CreatePackageBody'
+      responses:
+        201:
+          $ref: '#/components/responses/CreatePackageResponse'
+          
+  /v1/documents/{documentId}/grant-access:
+    put:
+      summary: Conceder accesos a un usuario a un documento
+      tags:
+        - Documents
+      security:
+        - CognitoJWT: []
+      parameters:
+        - in: path
+          name: documentId
+          schema:
+            type: string
+          required: true
+      requestBody:
+        $ref: '#/components/requestBodies/GrantDocumentAccessBody'
+      responses:
+        201:
+          $ref: '#/components/responses/GrantDocumentAccessResponse'
+          
+          
+  /v1/documents/authenticate:
+    post:
+      summary: Autenticar documentos
+      tags:
+        - Documents
+      security:
+        - CognitoJWT: []
+      requestBody:
+        $ref: '#/components/requestBodies/AuthenticateDocumentBody'
+      responses:
+        201:
+          $ref: '#/components/responses/AuthenticateDocumentResponse'
+          
+  /v1/documents/send:
+    post:
+      summary: Enviar documentos a sistemas externos
+      tags:
+        - Documents
+      security:
+        - CognitoJWT: []
+      requestBody:
+        $ref: '#/components/requestBodies/SendDocumentBody'
+      responses:
+        201:
+          $ref: '#/components/responses/SendDocumentResponse'
+          
+  /v1/documents/request:
+    post:
+      summary: Solicitar documentos a sistemas externos
+      tags:
+        - Documents
+      security:
+        - CognitoJWT: []
+      requestBody:
+        $ref: '#/components/requestBodies/RequestDocumentBody'
+      responses:
+        201:
+          $ref: '#/components/responses/RequestDocumentResponse'
+          
+          
+  /v1/idp/signup:
+    post:
+      summary: Servicio de registro de usuario
+      tags:
+        - Users
+      requestBody:
+        $ref: '#/components/requestBodies/SignUpRequestBody'
+      responses:
+        201:
+          $ref: '#/components/responses/UploadFileResponse'
+          
+  /v1/idp/login:
+    post:
+      summary: Iniciar Sesion
+      tags:
+        - Users
+      requestBody:
+        $ref: '#/components/requestBodies/LoginRequestBody'
+      responses:
+        200:
+          $ref: '#/components/responses/UploadFileResponse'
+          
+  /v1/queue-service:
+    post:
+      summary: Servicio de encolamiento
+      tags:
+        - Queue
+      requestBody:
+        $ref: '#/components/requestBodies/QueueServiceRequestBody'
+      responses:
+        202:
+          $ref: '#/components/responses/QueueServiceResponse'
+          
+  /v1/redis/web-service:
+    get:
+      summary: Obtener un registro de redis
+      tags:
+        - Redis
+      parameters:
+        - in: query
+          schema:
+            type: string
+          name: key
+          required: false
+      security:
+        - CognitoJWT: []
+      responses:
+        200:
+          $ref: '#/components/responses/GetRedisResponse'
+    post:
+      summary: Agregar un registro a redis
+      tags:
+        - Redis
+      requestBody:
+        $ref: '#/components/requestBodies/CreateRedisRequestBody'
+      responses:
+        201:
+          $ref: '#/components/responses/CreateRedisResponse'
+          
+  /v1/notifications:
+    post:
+      summary: Agregar un registro a redis NO VA A ESTAR EXPUESTO POR HTTP SINO SUSCRITO AL BROKER
+      tags:
+        - Notifications
+      requestBody:
+        $ref: '#/components/requestBodies/SendNotificationBody'
+      responses:
+        201:
+          $ref: '#/components/responses/CreateRedisResponse'
+          
+  /v1/operator/transfer:
+    post:
+      summary: Transferir un usuario de un operador a nosotros
+      tags:
+        - Notifications
+      requestBody:
+        $ref: '#/components/requestBodies/SendNotificationBody'
+      responses:
+        201:
+          $ref: '#/components/responses/CreateRedisResponse'
+  
+
+
+components:
+  schemas:
+    empty:
+      type: object
+      
+    file:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+      
+    fileUploaded:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "File has been uploaded succesfully"
+          
+    login:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+        filename:
+          type: string
+          
+    Documents:
+      type: array
+      items:
+        $ref: '#/components/schemas/Document'
+        
+    SignUp:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        addess:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        phoneNumber:
+          type: string
+      required:
+        - id
+        - name
+        - address
+        - email
+        - password
+        
+    QueueMessage:
+      type: object
+      properties:
+        message:
+          type: object
+        entity:
+          type: string
+          ## enum:
+          ##  - "ENVIAR_DOCUMENTOS"
+          
+    MessageQueued:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Your request is been proccessed"
+          
+    CreateRedis:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+        ttl:
+          type: integer
+      required:
+        - key
+        - value
+          
+    GetRedis:
+      type: object
+      properties:
+        value:
+          type: string
+          
+    SendNotification:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - "SMS"
+            - "EMAIL"
+        message:
+          type: string
+        receiver:
+          type: string
+        subject:
+          type: string
+      required:
+        - type
+        - message
+        - receiver
+
+    ReceiveDocument:
+      type: object
+      properties:
+        userId:
+          type: string
+        file:
+          type: string
+          format: binary
+      required:
+        - userId
+        - file
+
+    DocumentReceived:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "The document was successfully received"
+          
+    CreatePackage:
+      type: object
+      properties:
+        name:
+          type: string
+        documents:
+          type: array
+          items:
+            type: string
+            description: documents id
+            
+    PackageCreated:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        documents:
+          type: array
+          items:
+            type: string
+            description: documents id
+            
+    GrantDocumentAccess:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          
+    DocumentAccessGranted:
+      type: object
+      properties:
+        message: 
+          type: string
+          example: "Access have been granted to the user successfully"
+          
+    AuthenticateDocument:
+      type: object
+      properties:
+        idCitizen: 
+          type: string
+        urlDocument:
+          type: string
+        documentTitle:
+          type: string
+          
+    DocumentAuthenticated:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "El documento: Diploma Grado del ciudadano 1234567890 ha sido autenticado exitosamente"
+          
+    SendDocuments:
+      type: object
+      properties:
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+              filename:
+                type: string
+              fileUrl:
+                type: string
+                
+    RequestDocument:
+      type: object
+      properties:
+        idCitizen:
+          type: string
+        documentType:
+          type: string
+          #enum:
+          #  - "ID"
+          #  - "TITLE"
+        operatorName:
+          type: string
+                
+    DocumentsSended:
+      type: object
+      properties:
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+              filename:
+                type: string
+              fileUrl:
+                type: string
+              status:
+                type: string
+                enum:
+                  - "SUCCESS"
+                  - "FAILED"
+                  
+    DocumentRequested:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Document have been successfully requested"
+            
+  securitySchemes:
+    CognitoJWT:
+      type: apiKey
+      name: Authorization
+      in: header
+      
+    APIKey:
+      type: apiKey
+      name: Authorization
+      in: header
+
+  requestBodies:
+    UploadFileRequestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: '#/components/schemas/file'
+            
+    LoginRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/login'
+            
+    SignUpRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SignUp'
+            
+    QueueServiceRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/QueueMessage'
+            
+    CreateRedisRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateRedis'
+            
+    SendNotificationBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SendNotification'
+            
+    ReceiveDocumentBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: '#/components/schemas/ReceiveDocument'
+            
+    CreatePackageBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreatePackage'
+            
+    GrantDocumentAccessBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GrantDocumentAccess'
+            
+    AuthenticateDocumentBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AuthenticateDocument'
+            
+    SendDocumentBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SendDocuments'
+            
+    RequestDocumentBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RequestDocument'
+
+  responses:
+    UploadFileResponse:
+      description: Response of payments
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: "string"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/fileUploaded'
+            
+    DocumentsResponse:
+      description: Respuesta de documentos
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: "string"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Documents'
+            
+    QueueServiceResponse:
+      description: Response of payments
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: "string"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MessageQueued'
+            
+    GetRedisResponse:
+      description: Respuesta de obtener registro de redis
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: "string"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/GetRedis'
+            
+    CreateRedisResponse:
+      description: Respuesta de obtener registro de redis
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: "string"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateRedis'
+
+    ReceiveDocumentResponse:
+      description: Respuesta de obtener registro de redis
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: "string"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DocumentReceived'
+            
+    CreatePackageResponse:
+      description: Respuesta de obtener registro de redis
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: "string"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PackageCreated'
+            
+    GrantDocumentAccessResponse:
+      description: Respuesta de obtener registro de redis
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: "string"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DocumentAccessGranted'
+            
+    AuthenticateDocumentResponse:
+      description: Respuesta de obtener registro de redis
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: "string"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DocumentAuthenticated'
+            
+    SendDocumentResponse:
+      description: Respuesta de obtener registro de redis
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: "string"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DocumentsSended'
+            
+    RequestDocumentResponse:
+      description: Respuesta de solicitar documento
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: "string"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DocumentRequested'
