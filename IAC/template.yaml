@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  IamOperatorUserPool:
+    Type: "AWS::Cognito::UserPool"
+    Properties:
+      UserPoolName: IamOperatorUserPool
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      MfaConfiguration: 'OFF'
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: false
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+      Schema:
+        - Name: idCitizen
+          AttributeDataType: String
+          Mutable: true
+          StringAttributeConstraints:
+            MinLength: '8'   # Longitud mínima para la cédula
+            MaxLength: '12'  # Longitud máxima para la cédula
+        - Name: name
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+        - Name: address
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+        - Name: phone_number
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+
+  IamOperatorSystemPoolClient:
+    Type: "AWS::Cognito::UserPoolClient"
+    Properties:
+      ClientName: IamOperatorSystem
+      UserPoolId: !Ref IamOperatorUserPool
+      GenerateSecret: true
+      ExplicitAuthFlows:
+        - "USER_PASSWORD_AUTH"
+
+
+Outputs:
+  UserPoolClientId:
+    Description: "Client Secret for the User Pool Client"
+    Value: !GetAtt IamOperatorSystemPoolClient.ClientId
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolClientId"
+
+  UserPoolClientSecret:
+    Description: "Client Secret for the User Pool Client"
+    Value: !GetAtt IamOperatorSystemPoolClient.ClientSecret
+    Export:
+      Name: !Sub "${AWS::StackName}-UserPoolClientSecret"
