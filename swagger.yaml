@@ -126,6 +126,19 @@ paths:
         201:
           $ref: '#/components/responses/SendDocumentResponse'
           
+  /v1/documents/external-request:
+    post:
+      summary: Solicitar documentos a sistemas externos
+      tags:
+        - Documents
+      security:
+        - CognitoJWT: []
+      requestBody:
+        $ref: '#/components/requestBodies/ExternalRequestDocumentBody'
+      responses:
+        201:
+          $ref: '#/components/responses/ExternalRequestDocumentResponse'
+        
   /v1/documents/request:
     post:
       summary: Solicitar documentos a sistemas externos
@@ -137,8 +150,7 @@ paths:
         $ref: '#/components/requestBodies/RequestDocumentBody'
       responses:
         201:
-          $ref: '#/components/responses/RequestDocumentResponse'
-          
+          $ref: '#/components/responses/RequestDocumentResponse'  
           
   /v1/idp/signup:
     post:
@@ -432,7 +444,7 @@ components:
               fileUrl:
                 type: string
                 
-    RequestDocument:
+    ExternalRequestDocument:
       type: object
       properties:
         idCitizen:
@@ -444,6 +456,19 @@ components:
           #  - "TITLE"
         operatorName:
           type: string
+
+    RequestDocument:
+      type: object
+      properties:
+        idCitizen:
+          type: string
+        documentType:
+          type: string
+        entityName:
+          type: string
+          #enum:
+          #  - "ID"
+          #  - "TITLE"
                 
     DocumentsSended:
       type: object
@@ -471,7 +496,9 @@ components:
         message:
           type: string
           example: "Document have been successfully requested"
-            
+  
+  
+  
   securitySchemes:
     CognitoJWT:
       type: apiKey
@@ -482,6 +509,10 @@ components:
       type: apiKey
       name: Authorization
       in: header
+
+
+
+
 
   requestBodies:
     UploadFileRequestBody:
@@ -561,12 +592,22 @@ components:
           schema:
             $ref: '#/components/schemas/SendDocuments'
             
+    ExternalRequestDocumentBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExternalRequestDocument'
+            
     RequestDocumentBody:
       required: true
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/RequestDocument'
+
+  
+  
 
   responses:
     UploadFileResponse:
@@ -678,6 +719,17 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/DocumentsSended'
+            
+    ExternalRequestDocumentResponse:
+      description: Respuesta de solicitar documento
+      headers:
+        Access-Control-Allow-Origin:
+          schema:
+            type: "string"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DocumentRequested'
             
     RequestDocumentResponse:
       description: Respuesta de solicitar documento
