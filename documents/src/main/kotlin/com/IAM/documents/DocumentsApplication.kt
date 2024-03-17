@@ -1,11 +1,11 @@
-package com.iam.operator.micarpeta
+package com.IAM.documents
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class MicarpetaApplication
+class DocumentsApplication
 
 fun main(args: Array<String>) {
-	runApplication<MicarpetaApplication>(*args)
+	runApplication<DocumentsApplication>(*args)
 }
