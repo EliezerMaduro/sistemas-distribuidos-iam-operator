@@ -1,21 +1,39 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app
+  name: login-service
   labels:
-    app: my-app
+    app: login-service
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
-      app: my-app
+      app: login-service
   template:
     metadata:
       labels:
-        app: my-app
+        app: login-service
     spec:
       containers:
-        - name: my-app
-          image: 339713128299.ecr.your-region.amazonaws.com/your-repository-name:latest
+        - name: login-service
+          image: 339713128299.dkr.ecr.us-east-1.amazonaws.com/login-service:v1.0.2
           ports:
             - containerPort: 8080
+          env:
+            - name: COGNITO_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: cognito-client-secret
+                  name: cognito-client-secret
+            - name: COGNITO_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  key: cognito-client-id
+                  name: cognito-client-id
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "300m"
+            limits:
+              memory: "200Mi"
+              cpu: "300m"

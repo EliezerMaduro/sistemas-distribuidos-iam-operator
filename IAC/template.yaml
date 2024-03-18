@@ -92,10 +92,10 @@ Resources:
         EndpointPublicAccess: true
         EndpointPrivateAccess: true
 
-  EKSLoginCluster:
+  EKSServicesCluster:
     Type: AWS::EKS::Cluster
     Properties:
-      Name: !Ref ClusterName
+      Name: !Ref ServicesClusterName
       RoleArn: !GetAtt EKSClusterRole.Arn
       ResourcesVpcConfig:
         SubnetIds:
@@ -106,7 +106,7 @@ Resources:
         EndpointPublicAccess: true
         EndpointPrivateAccess: true
 
-  RabbitMQNodeGroup:
+  RabbitMQService:
     Type: AWS::EKS::Nodegroup
     Properties:
       ClusterName: !Ref EKSCluster
@@ -115,6 +115,22 @@ Resources:
         DesiredSize: 2
         MaxSize: 2
         MinSize: 1
+      Subnets:
+          - !Ref Subnet01
+          - !Ref Subnet02
+      InstanceTypes:
+        - t2.micro # Reemplazar con el tipo de instancia deseado
+      AmiType: AL2_x86_64
+
+  ServicesNodeGroup:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      ClusterName: !Ref EKSServicesCluster
+      NodeRole: !GetAtt EKSNodeRole.Arn
+      ScalingConfig:
+        DesiredSize: 8
+        MaxSize: 10
+        MinSize: 5
       Subnets:
           - !Ref Subnet01
           - !Ref Subnet02
@@ -270,6 +286,11 @@ Resources:
         - !GetAtt RDSSecurityGroup.GroupId
       PubliclyAccessible: true
       StorageType: gp2
+
+  LoginServiceImageRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: login-service
 
 Outputs:
   UserPoolClientId:
