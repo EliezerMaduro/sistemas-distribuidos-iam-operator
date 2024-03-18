@@ -8,6 +8,6 @@ import com.IAM.documents.model.Document
 
 @Repository 
 interface IDocumentsRepository : JpaRepository<Document,Int> {
-    fun findByOwner(owner: String): List<Document>
+    fun findAllByIdCitizen(idCitizen: Int?): List<Document>
 
 }
