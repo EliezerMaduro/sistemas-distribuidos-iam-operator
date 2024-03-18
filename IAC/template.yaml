@@ -1,4 +1,26 @@
 AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  ClusterName:
+    Type: String
+    Default: rabbit-mq-cluster
+    Description: Nombre del cluster de EKS
+
+  Subnet01:
+    Type: String
+    Default: subnet-0150b321d8e18c3dd
+    Description: Subnet 1
+
+  Subnet02:
+    Type: String
+    Default: subnet-0c6995df97b35bb48
+    Description: Subnet 2
+
+  SecurityGroup:
+    Type: String
+    Default: sg-0f0e77c114b932946
+    Description: Security group
+
 Resources:
   IamOperatorUserPool:
     Type: "AWS::Cognito::UserPool"
@@ -51,6 +73,184 @@ Resources:
       ExplicitAuthFlows:
         - "USER_PASSWORD_AUTH"
 
+  EKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: !Ref ClusterName
+      RoleArn: !GetAtt EKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SubnetIds:
+          - !Ref Subnet01
+          - !Ref Subnet02
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        EndpointPublicAccess: true
+        EndpointPrivateAccess: true
+
+  RabbitMQNodeGroup:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      ClusterName: !Ref EKSCluster
+      NodeRole: !GetAtt EKSNodeRole.Arn
+      ScalingConfig:
+        DesiredSize: 2
+        MaxSize: 2
+        MinSize: 1
+      Subnets:
+          - !Ref Subnet01
+          - !Ref Subnet02
+      InstanceTypes:
+        - t2.micro # Reemplazar con el tipo de instancia deseado
+      AmiType: AL2_x86_64
+
+  EKSClusterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "eks.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+      Policies:
+        - PolicyName: "EKSClusterPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "eks:DescribeCluster"
+                  - "eks:ListNodegroups"
+                  - "eks:DescribeNodegroup"
+                  - "eks:DescribeFargateProfile"
+                  - "eks:ListFargateProfiles"
+                  - "eks:AccessKubernetesApi"
+                  - "eks:CreateFargateProfile"
+                  - "eks:DeleteFargateProfile"
+                  - "eks:UpdateFargateProfile"
+                  - "eks:TagResource"
+                  - "eks:UntagResource"
+                  - "eks:ListTagsForResource"
+                  - "eks:UpdateClusterVersion"
+                  - "eks:UpdateClusterConfig"
+                Resource: "*"
+
+  EKSNodeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "ec2.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+      Policies:
+        - PolicyName: "EKSNodePolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action: "eks:DescribeNodegroup"
+                Resource: "*"
+
+  EKSNodegroupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "eks-nodegroup.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "EKSNodegroupPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "ec2:DescribeInstances"
+                  - "ec2:DescribeRouteTables"
+                  - "ec2:DescribeSecurityGroups"
+                  - "ec2:DescribeSubnets"
+                  - "ec2:DescribeVolumes"
+                  - "ec2:CreateSecurityGroup"
+                  - "ec2:CreateTags"
+                  - "ec2:CreateVolume"
+                  - "ec2:ModifyInstanceAttribute"
+                  - "ec2:AuthorizeSecurityGroupIngress"
+                  - "ec2:DeleteSecurityGroup"
+                  - "ec2:DescribeSecurityGroups"
+                  - "ec2:RevokeSecurityGroupIngress"
+                  - "ec2:DeleteTags"
+                  - "ec2:DescribeVpcs"
+                  - "autoscaling:DescribeAutoScalingGroups"
+                  - "autoscaling:DescribeLaunchConfigurations"
+                  - "autoscaling:DescribeTags"
+                  - "autoscaling:UpdateAutoScalingGroup"
+                  - "eks:DescribeNodegroup"
+                  - "eks:ListNodegroups"
+                  - "eks:CreateNodegroup"
+                  - "eks:DeleteNodegroup"
+                  - "eks:UpdateNodegroupConfig"
+                  - "eks:TagResource"
+                  - "eks:UntagResource"
+                  - "eks:ListTagsForResource"
+                  - "eks:UpdateClusterConfig"
+                  - "eks:UpdateClusterVersion"
+                  - "eks:AssociateEncryptionConfig"
+                  - "iam:PassRole"
+                  - "iam:GetRole"
+                  - "ec2:DescribeNetworkInterfaces"
+                  - "ec2:CreateNetworkInterface"
+                  - "ec2:DeleteNetworkInterface"
+                  - "ec2:DescribeInstanceTypes"
+                  - "ec2:DescribeImages"
+                Resource: "*"
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group para acceso a RDS MySQL
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0  # Esto permite el acceso desde cualquier IP. Ajusta según sea necesario.
+
+  SubnetGroup:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties: 
+      DBSubnetGroupDescription: description
+      DBSubnetGroupName: IamOperatorSubnetGroup
+      SubnetIds: 
+        - !Ref Subnet01
+        - !Ref Subnet02
+
+  RDSDatabase:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: '20'
+      DBInstanceClass: db.t2.micro
+      Engine: mysql
+      EngineVersion: '5.7'
+      MasterUsername: admin
+      MasterUserPassword: IamOperator$2024
+      DBInstanceIdentifier: iam-operator-database
+      DBSubnetGroupName: !Ref SubnetGroup
+      VPCSecurityGroups:
+        - !GetAtt RDSSecurityGroup.GroupId
+      PubliclyAccessible: true
+      StorageType: gp2
 
 Outputs:
   UserPoolClientId:
