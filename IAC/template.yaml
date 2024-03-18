@@ -6,6 +6,11 @@ Parameters:
     Default: rabbit-mq-cluster
     Description: Nombre del cluster de EKS
 
+  ServicesClusterName:
+    Type: String
+    Default: services-cluster
+    Description: Nombre del cluster de EKS
+
   Subnet01:
     Type: String
     Default: subnet-0150b321d8e18c3dd
@@ -74,6 +79,20 @@ Resources:
         - "USER_PASSWORD_AUTH"
 
   EKSCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: !Ref ClusterName
+      RoleArn: !GetAtt EKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SubnetIds:
+          - !Ref Subnet01
+          - !Ref Subnet02
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        EndpointPublicAccess: true
+        EndpointPrivateAccess: true
+
+  EKSLoginCluster:
     Type: AWS::EKS::Cluster
     Properties:
       Name: !Ref ClusterName
