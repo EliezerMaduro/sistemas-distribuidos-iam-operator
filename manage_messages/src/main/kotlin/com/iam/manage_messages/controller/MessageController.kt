@@ -8,15 +8,16 @@ import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus
 import com.iam.manage_messages.services.RabbitMQSender
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.bind.annotation.RequestMapping
+
+import com.iam.manage_messages.models.Message
 
 @RestController
+@RequestMapping("/v1")
 class MessageController @Autowired constructor(private val rabbitMQSender: RabbitMQSender) {
 
-    private val exchange = "user.signed_up"
-    private val routingKey = "sign_up_email"
-
     @PostMapping("/send-message")
-    fun sendMessageToQueue(@RequestBody message: Any): ResponseEntity<Any>{
-        return rabbitMQSender.sendObjectToQueue(message, "user.sign_up_email")
+    fun sendMessageToQueue(@RequestBody message: Message): ResponseEntity<Any>{
+        return rabbitMQSender.sendObjectToQueue(message)
     }
 }

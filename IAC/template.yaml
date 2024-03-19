@@ -11,6 +11,11 @@ Parameters:
     Default: services-cluster
     Description: Nombre del cluster de EKS
 
+  RedisClusterName:
+    Type: String
+    Default: redis-cluster
+    Description: Nombre del cluster de EKS
+
   Subnet01:
     Type: String
     Default: subnet-0150b321d8e18c3dd
@@ -106,7 +111,7 @@ Resources:
         EndpointPublicAccess: true
         EndpointPrivateAccess: true
 
-  RabbitMQService:
+  RabbitNodeGroup:
     Type: AWS::EKS::Nodegroup
     Properties:
       ClusterName: !Ref EKSCluster
@@ -122,15 +127,45 @@ Resources:
         - t2.micro # Reemplazar con el tipo de instancia deseado
       AmiType: AL2_x86_64
 
+  EKSRedisCluster:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Name: !Ref RedisClusterName
+      RoleArn: !GetAtt EKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SubnetIds:
+          - !Ref Subnet01
+          - !Ref Subnet02
+        SecurityGroupIds:
+          - !Ref SecurityGroup
+        EndpointPublicAccess: true
+        EndpointPrivateAccess: true
+
+  RedisNodeGroup:
+    Type: AWS::EKS::Nodegroup
+    Properties:
+      ClusterName: !Ref EKSRedisCluster
+      NodeRole: !GetAtt EKSNodeRole.Arn
+      ScalingConfig:
+        DesiredSize: 1
+        MaxSize: 1
+        MinSize: 1
+      Subnets:
+          - !Ref Subnet01
+          - !Ref Subnet02
+      InstanceTypes:
+        - t2.micro # Reemplazar con el tipo de instancia deseado
+      AmiType: AL2_x86_64
+
   ServicesNodeGroup:
     Type: AWS::EKS::Nodegroup
     Properties:
       ClusterName: !Ref EKSServicesCluster
       NodeRole: !GetAtt EKSNodeRole.Arn
       ScalingConfig:
-        DesiredSize: 8
-        MaxSize: 10
-        MinSize: 5
+        DesiredSize: 4
+        MaxSize: 6
+        MinSize: 4
       Subnets:
           - !Ref Subnet01
           - !Ref Subnet02
@@ -292,6 +327,16 @@ Resources:
     Properties:
       RepositoryName: login-service
 
+  MangeMessageServiceImageRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: manage-messages-service
+
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: iam-operator
+
 Outputs:
   UserPoolClientId:
     Description: "Client Secret for the User Pool Client"
@@ -304,3 +349,15 @@ Outputs:
     Value: !GetAtt IamOperatorSystemPoolClient.ClientSecret
     Export:
       Name: !Sub "${AWS::StackName}-UserPoolClientSecret"
+
+  S3BucketName:
+    Description: Nombre del bucket S3 creado
+    Value: !Ref S3Bucket
+
+  PresignedURL:
+    Description: URL prefirmada para descargar archivos desde el bucket S3
+    Value: !Sub "https://${S3Bucket}.s3.${AWS::Region}.amazonaws.com"
+
+  RDSHostURL:
+    Description: URL del host de la instancia de RDS
+    Value: !GetAtt RDSDatabase.Endpoint.Address
