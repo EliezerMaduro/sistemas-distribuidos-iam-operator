@@ -10,14 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.http.HttpStatus
 
-
-import com.iam.upload.service.IUploadService
 import com.iam.upload.service.S3Service
 
 @RestController
 @RequestMapping("/v1/documents")
 class UploadDocumentController @Autowired constructor(
-    private val UploadService: IUploadService,
     private val s3service: S3Service
     ){
     @PostMapping("/upload")
