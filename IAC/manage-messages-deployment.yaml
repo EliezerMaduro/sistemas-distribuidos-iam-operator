@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: manage-messages-service
+  labels:
+    app: manage-messages-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: manage-messages-service
+  template:
+    metadata:
+      labels:
+        app: manage-messages-service
+    spec:
+      containers:
+        - name: manage-messages-service
+          image: 339713128299.dkr.ecr.us-east-1.amazonaws.com/manage-messages-service:0.0.1
+          ports:
+            - containerPort: 8081
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "300m"
+            limits:
+              memory: "200Mi"
+              cpu: "300m"
