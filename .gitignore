@@ -1,0 +1,3 @@
+*/target/
+services-create-secrets.bat
+set-environmental-variables.bat
