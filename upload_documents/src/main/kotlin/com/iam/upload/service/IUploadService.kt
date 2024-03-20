@@ -5,4 +5,5 @@ import com.iam.upload.model.Document
 
 interface IUploadService{
     fun uploadDocument(file: MultipartFile): String
+    fun saveDocument(documentData: Document): Document
 }
