@@ -14,7 +14,7 @@ import com.IAM.documents.model.Document
 
 @RestController
 @RequestMapping("/v1/documents")
-class DocumentsController@Autowired constructor(private val documentsService: IDocumentsService) {
+class DocumentsController @Autowired constructor(private val documentsService: IDocumentsService) {
  
     @GetMapping
     fun obtenerAllDocumentos(): List<Document> {
