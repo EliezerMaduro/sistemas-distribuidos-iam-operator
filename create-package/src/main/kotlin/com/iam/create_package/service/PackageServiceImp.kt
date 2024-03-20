@@ -11,4 +11,7 @@ public class PackageServiceImp (private val packageRepository: IPackageRepositor
     fun savePackage(packageModel: PackageModel): PackageModel {
         return packageRepository.save(packageModel)
     }
+    fun getPackagesByCitizenId(idCitizen: Int): List<PackageModel> {
+        return packageRepository.findByIdCitizen(idCitizen)
+    }
 }

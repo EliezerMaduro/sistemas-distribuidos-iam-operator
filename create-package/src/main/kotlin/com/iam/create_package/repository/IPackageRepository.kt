@@ -7,4 +7,5 @@ import com.iam.create_package.model.PackageModel
 
 @Repository
 interface IPackageRepository : JpaRepository<PackageModel,Int>{
+    fun findByIdCitizen(idCitizen: Int): List<PackageModel>
 }
