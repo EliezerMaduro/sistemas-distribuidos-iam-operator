@@ -16,9 +16,25 @@ spec:
     spec:
       containers:
         - name: manage-messages-service
-          image: 339713128299.dkr.ecr.us-east-1.amazonaws.com/manage-messages-service:0.0.1
+          image: 339713128299.dkr.ecr.us-east-1.amazonaws.com/manage-messages-service:0.0.3
           ports:
             - containerPort: 8081
+          env:
+          - name: RABBITMQ_USER
+            valueFrom:
+              secretKeyRef:
+                key: rabbitmq-user
+                name: rabbitmq-user
+          - name: RABBITMQ_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: rabbitmq-password
+                name: rabbitmq-password
+          - name: RABBITMQ_HOST
+            valueFrom:
+              secretKeyRef:
+                key: rabbitmq-host
+                name: rabbitmq-host
           resources:
             requests:
               memory: "200Mi"
