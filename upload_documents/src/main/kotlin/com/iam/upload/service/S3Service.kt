@@ -5,12 +5,13 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import org.springframework.beans.factory.annotation.Autowired
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.UUID;
  
 @Service
-class S3Service(private val s3Client: S3Client) {
+class S3Service @Autowired constructor(private val s3Client: S3Client) {
  
     fun uploadFile(file: MultipartFile): String {
         val bucketName = "iam-operator"

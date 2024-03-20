@@ -1,11 +1,10 @@
 package com.iam.upload.service;
-
+ 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 import com.iam.upload.repository.IUploadRepository
-
 @Service
 @Transactional
 public class UploadServiceImp (private val UploadRepository: IUploadRepository) : IUploadService {

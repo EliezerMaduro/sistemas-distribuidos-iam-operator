@@ -6,14 +6,20 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3Client
- 
+
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.annotation.Autowired
+
 @Configuration
-class AWSS3Configuration {
+class AWSS3Configuration @Autowired constructor(
+    @Value("\${aws.accessKeyId}") private val awsAccessKeyId: String,
+    @Value("\${aws.secretAccessKey}") private val awsSecretAccessKey: String
+    ){
  
     @Bean
     fun s3Client(): S3Client {
-        val accessKeyId = "---"
-        val secretAccessKey = "-----"
+        val accessKeyId = awsAccessKeyId
+        val secretAccessKey = awsSecretAccessKey
         val region = Region.US_EAST_1
  
         val credenciales = AwsBasicCredentials.create(accessKeyId, secretAccessKey)
