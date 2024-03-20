@@ -14,7 +14,6 @@ import com.iam.upload.service.S3Service
 import com.iam.upload.service.IUploadService
 import com.iam.upload.service.UploadServiceImp
 import com.iam.upload.model.Document
-import com.iam.upload.dto.DocumentDTO
 import java.time.LocalDateTime
 
 
@@ -28,18 +27,19 @@ class UploadDocumentController @Autowired constructor(
     @PostMapping("/upload")
     fun uploadDocument(
         @RequestParam("file") file: MultipartFile,
-        @RequestBody documentDTO: DocumentDTO
+        @RequestParam name: String,
+        @RequestParam idCitizen: Int
 
         ): ResponseEntity<String> {
         try {
            
             // Subir el archivo al bucket de S3
             val url = s3service.uploadFile(file)
-            val originalFilename = file.originalFilename ?: "Unknown",
+            val originalFilename = file.originalFilename ?: "Unknown"
             val document = Document(
                 id = 0, // Deja que la base de datos genere el ID
-                idCitizen = documentDTO.idCitizen, // Si tienes un identificador de ciudadano, puedes asignarlo aquí
-                name = documentDTO.name,
+                idCitizen = idCitizen, // Si tienes un identificador de ciudadano, puedes asignarlo aquí
+                name = name,
                 createdAt = LocalDateTime.now(),
                 fileName = originalFilename,
                 type = originalFilename.substringAfterLast("."),
