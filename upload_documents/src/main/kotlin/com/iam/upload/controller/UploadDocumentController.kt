@@ -33,22 +33,25 @@ class UploadDocumentController @Autowired constructor(
         ): ResponseEntity<String> {
         try {
            
-            // Subir el archivo al bucket de S3
+            
             val url = s3service.uploadFile(file)
             val originalFilename = file.originalFilename ?: "Unknown"
+            var validated = uploadService.authenticateDocument(idCitizen, url, name)
             val document = Document(
-                id = 0, // Deja que la base de datos genere el ID
-                idCitizen = idCitizen, // Si tienes un identificador de ciudadano, puedes asignarlo aquí
+                id = 0,
+                idCitizen = idCitizen, 
                 name = name,
                 createdAt = LocalDateTime.now(),
-                fileName = originalFilename,
+                fileName = originalFilename.substringBeforeLast("."),
                 type = originalFilename.substringAfterLast("."),
+                validation = validated,
                 url = url
             )
+            
             uploadService.saveDocument(document)
             return ResponseEntity.ok("Documento cargado exitosamente. URL: $url")
         } catch (e: Exception) {
-            // Manejar cualquier excepción que ocurra durante la carga del documento
+            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error al cargar el documento: ${e.message}")
         }

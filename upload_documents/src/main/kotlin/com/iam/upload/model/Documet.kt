@@ -18,6 +18,7 @@ class Document(
     val createdAt: LocalDateTime,
     val type: String,
     val fileName: String,
+    val validation:String,
     val url: String,
 )
 
