@@ -36,7 +36,7 @@ class UploadDocumentController @Autowired constructor(
             
             val url = s3service.uploadFile(file)
             val originalFilename = file.originalFilename ?: "Unknown"
-            var validated = uploadService.authenticateDocument(idCitizen, url, name)
+            var validated = uploadService.authenticateDocument(idCitizen, url, originalFilename.substringBeforeLast("."))
             val document = Document(
                 id = 0,
                 idCitizen = idCitizen, 

@@ -39,7 +39,6 @@ public class UploadServiceImp (private val UploadRepository: IUploadRepository) 
     
     
     fun authenticateDocument(idCitizen: Int, urlDocument: String, documentTitle: String): String {
-        val httpClient = OkHttpClient()
 
         val json = """
             {
@@ -48,23 +47,26 @@ public class UploadServiceImp (private val UploadRepository: IUploadRepository) 
                 "documentTitle": "$documentTitle"
             }
         """.trimIndent()
-
+    
         val mediaType = "application/json; charset=utf-8".toMediaType()
         val requestBody = json.toRequestBody(mediaType)
-
+        
+        val httpClient = OkHttpClient()
         val request = Request.Builder()
             .url(govCarpetaUrl)
             .put(requestBody)
             .build()
-
+        
         try {
             val response = httpClient.newCall(request).execute()
-            if (!response.isSuccessful) {
-                throw IOException("Unexpected response code: ${response.code}")
-            }
-            return response.body?.string() ?: "Empty response"  
+            val responseBody = response.body?.string()
+            println("Server Response:")
+            println(responseBody)
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+            return responseBody.toString()
         } catch (e: IOException) {
-            throw RuntimeException("Error al autenticar el documento", e)
-         }
+            e.printStackTrace()
+            return "Failed to authenticate the document!"
+        }
     }
 }
